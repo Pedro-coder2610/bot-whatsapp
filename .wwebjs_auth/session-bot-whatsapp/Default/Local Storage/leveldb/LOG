@@ -1,0 +1,6 @@
+2026/04/19-13:56:46.894 7c0c Reusing MANIFEST C:\Users\pedro\bot-whatsapp\.wwebjs_auth\session-bot-whatsapp\Default\Local Storage\leveldb/MANIFEST-000001
+2026/04/19-13:56:47.893 7c0c Recovering log #4
+2026/04/19-13:56:48.073 7c0c Reusing old log C:\Users\pedro\bot-whatsapp\.wwebjs_auth\session-bot-whatsapp\Default\Local Storage\leveldb/000004.log 
+2026/04/20-00:09:15.346 6db4 Level-0 table #8: started
+2026/04/20-00:09:15.825 6db4 Level-0 table #8: 20512 bytes OK
+2026/04/20-00:09:15.892 6db4 Delete type=0 #4
