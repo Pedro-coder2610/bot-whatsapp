@@ -397,8 +397,8 @@ async function start() {
     try {
         await client.initialize();
     } catch (err) {
-        console.log("Erro ao iniciar, tentando novamente...");
-        setTimeout(start, 5000);
+        console.log("ERRO REAL:", err);
+        // setTimeout(start, 5000);
     }
 }
 
