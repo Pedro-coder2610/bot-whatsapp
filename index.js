@@ -101,6 +101,8 @@ client.on("message_create", async (message) => {
 client.on("message_create", async (message) => {
 
 console.log("MSG:", message.body);
+ 
+if (!message.from) return;
 
     const texto = message.body?.trim();
     if (!texto) return;
