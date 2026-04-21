@@ -79,7 +79,7 @@ client.on("ready", () => {
 });
 
 // ===============================
-client.on("message", async (msg) => {
+client.on("message_create", async (message) => {
 
     if (!msg.from) return;
 
@@ -98,7 +98,7 @@ client.on("message", async (msg) => {
 });
 
 // ===============================
-client.on("message", async (message) => {
+client.on("message_create", async (message) => {
 
 console.log("MSG:", message.body);
 
