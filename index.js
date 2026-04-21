@@ -77,7 +77,10 @@ function getMutados(chatId) {
 client.on("ready", () => {
     console.log("Client is ready!");
 });
-
+client.on("disconnected", (reason) => {
+    console.log("⚠️ Desconectado:", reason);
+    start();
+});
 // ===============================
 client.on("message_create", async (message) => {
 
@@ -354,10 +357,14 @@ verifique todos os dias para comandos novos!
 
 async function start() {
     try {
+        console.log("🚀 Iniciando bot...");
         await client.initialize();
     } catch (err) {
         console.log("ERRO REAL:", err);
+        setTimeout(start, 5000);
     }
 }
-
+setInterval(() => {
+    console.log("🧠 Bot ainda vivo");
+}, 30000);
 start();
