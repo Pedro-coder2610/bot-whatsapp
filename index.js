@@ -57,8 +57,6 @@ process.on("SIGINT", async () => {
 const prefixo = "!";
 
 // ===============================
-// CONTROLE DE MUTADOS (por grupo)
-// ===============================
 const mutados = new Map();
 
 function getMutados(chatId) {
@@ -67,14 +65,15 @@ function getMutados(chatId) {
 }
 
 // ===============================
-// READY
-// ===============================
 client.on("ready", () => {
     console.log("Client is ready!");
 });
 
-// ===============================
-// APAGAR MENSAGEM DE MUTADO
+// DEBUG
+client.on("message", async (msg) => {
+    console.log("MENSAGEM RECEBIDA:", msg.body);
+});
+
 // ===============================
 client.on("message", async (msg) => {
 
@@ -95,39 +94,28 @@ client.on("message", async (msg) => {
 });
 
 // ===============================
-// COMANDOS
-// ===============================
 client.on("message", async (message) => {
 
-    if (message.fromMe) return;
+    // if (message.fromMe) return; // 🔥 comentado pra testar sozinho
 
     const texto = message.body?.trim();
     if (!texto) return;
     if (!texto.startsWith(prefixo)) return;
 
-    const comando = texto
-        .slice(prefixo.length)
-        .split(" ")[0]
-        .toLowerCase();
-
+    const comando = texto.slice(prefixo.length).split(" ")[0].toLowerCase();
     const chat = await message.getChat();
 
-    // ===============================
-    // !menu
-    // ===============================
     if (comando === "menu") {
 
         const agora = new Date();
-        const dataFormatada = agora.toLocaleDateString("pt-BR");
-        const horaFormatada = agora.toLocaleTimeString("pt-BR");
 
         const menu = `
 CONTATE _*+55 (84) 98713-4326 PARA AJUDAS OU PARA ENTRAR EM GRUPOS*_
 verifique todos os dias para comandos novos!
 
 ╭━━⪩ BEM VINDO! ⪨━━
-▢ • data: ${dataFormatada}
-▢ • hora: ${horaFormatada}
+▢ • data: ${agora.toLocaleDateString("pt-BR")}
+▢ • hora: ${agora.toLocaleTimeString("pt-BR")}
 ▢ • prefixo: !
 ▢ • versão: 2.0
 ╰━━─「🪐」─━━
@@ -146,20 +134,16 @@ verifique todos os dias para comandos novos!
 
 ╭━━⪩ BRINCADEIRAS ⪨━━
 ▢ • !abraço
-▢ • !socar  
+▢ • !socar
 ╰━━─「🎡」─━━
 `;
 
         await message.reply(menu);
-    } // ✅ FECHADO
+    }
 
-    // ===============================
-    // !ping
-    // ===============================
     if (comando === "ping") {
 
         const inicio = Date.now();
-
         const uptimeMs = process.uptime() * 1000;
 
         const h = Math.floor(uptimeMs / 3600000);
@@ -167,26 +151,18 @@ verifique todos os dias para comandos novos!
         const s = Math.floor((uptimeMs % 60000) / 1000);
 
         const msg = await message.reply("🏓 Pong!");
+        const lat = Date.now() - inicio;
 
-        const fim = Date.now();
-        const lat = fim - inicio;
-
-        await msg.reply(
-`🏓 Pong!
+        await msg.reply(`🏓 Pong!
 
 📶 Velocidade de resposta: ${lat}ms
-⏱️ Uptime: ${h}h ${m}m ${s}s`
-        );
+⏱️ Uptime: ${h}h ${m}m ${s}s`);
     }
 
-    // ===============================
-    // !autodestruir
-    // ===============================
     if (comando === "autodestruir") {
 
-        if (!chat.isGroup) {
+        if (!chat.isGroup)
             return message.reply("Esse comando só funciona em grupos.");
-        }
 
         const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -194,22 +170,18 @@ verifique todos os dias para comandos novos!
         await sleep(1000); await message.reply("3...");
         await sleep(1000); await message.reply("2...");
         await sleep(1000); await message.reply("1...");
-        await sleep(500);  await message.reply("💥 KABOMMMM");
+        await sleep(500); await message.reply("💥 KABOMMMM");
 
         await sleep(500);
         await chat.leave();
     }
 
-    // ===============================
-    // !mute
-    // ===============================
     if (comando === "mute") {
 
         if (!chat.isGroup)
             return message.reply("Esse comando só funciona em grupo.");
 
         const mentions = await message.getMentions();
-
         if (!mentions.length)
             return message.reply("Marque alguém para mutar.");
 
@@ -219,22 +191,15 @@ verifique todos os dias para comandos novos!
             lista.add(c.id._serialized);
         }
 
-        await chat.sendMessage(
-            `🔇 Usuário(s) mutado(s).`,
-            { mentions }
-        );
+        await chat.sendMessage(`🔇 Usuário(s) mutado(s).`, { mentions });
     }
 
-    // ===============================
-    // !unmute
-    // ===============================
     if (comando === "unmute") {
 
         if (!chat.isGroup)
             return message.reply("Esse comando só funciona em grupo.");
 
         const mentions = await message.getMentions();
-
         if (!mentions.length)
             return message.reply("Marque alguém para desmutar.");
 
@@ -244,15 +209,9 @@ verifique todos os dias para comandos novos!
             lista.delete(c.id._serialized);
         }
 
-        await chat.sendMessage(
-            `🔊 Usuário(s) desmutado(s).`,
-            { mentions }
-        );
+        await chat.sendMessage(`🔊 Usuário(s) desmutado(s).`, { mentions });
     }
 
-    // ===============================
-    // !mutelist
-    // ===============================
     if (comando === "mutelist") {
 
         if (!chat.isGroup)
@@ -276,130 +235,42 @@ verifique todos os dias para comandos novos!
         await chat.sendMessage(textoLista, { mentions });
     }
 
-    // ===============================
-    // !abraço
-    // ===============================
     if (comando === "abraço" || comando === "abraco") {
 
-        if (!chat.isGroup)
-            return message.reply("ta carente?.");
-
         const mentions = await message.getMentions();
-
         if (!mentions.length)
-            return message.reply("🤖Marque alguém para dar um abraço.");
-
-        let autor;
-        let alvo = mentions[0];
-
-        try {
-            if (message.fromMe) {
-                autor = await client.getContactById(client.info.wid._serialized);
-            } else {
-                autor = await message.getContact();
-            }
-        } catch (e) {
-            return message.reply("Erro ao identificar quem enviou.");
-        }
-
-        if (!alvo || !alvo.id) {
-            return message.reply("Não consegui identificar o usuário marcado.");
-        }
-
-        const frases = [
-            "🤗 @AUTOR deu um abraço bem apertado em @ALVO!",
-            "🥹 @AUTOR chegou de surpresa e abraçou @ALVO!",
-            "💞 @AUTOR espalhou carinho e abraçou @ALVO!",
-            "🫂 @AUTOR não aguentou e foi abraçar @ALVO!",
-            "✨ Abraço quentinho! @AUTOR → @ALVO"
-        ];
-
-        const frase = frases[Math.floor(Math.random() * frases.length)];
-
-        const legenda = frase
-            .replace("@AUTOR", `@${autor?.id?.user || "usuario"}`)
-            .replace("@ALVO", `@${alvo?.id?.user || "alvo"}`);
+            return message.reply("Marque alguém.");
 
         const media = MessageMedia.fromFilePath("./201888.mp4");
 
-        const listaMentions = [];
-        if (autor?.id) listaMentions.push(autor);
-        if (alvo?.id) listaMentions.push(alvo);
-
         await chat.sendMessage(media, {
-            caption: legenda,
-            mentions: listaMentions,
+            caption: "🤗 Abraço!",
             sendVideoAsGif: true
         });
     }
 
-    // ===============================
-    // !socar
-    // ===============================
     if (comando === "socar") {
 
-        if (!chat.isGroup) {
-            return message.reply("Use esse comando em grupo.");
-        }
-
         const mentions = await message.getMentions();
-
-        if (!mentions.length) {
-            return message.reply("Marque alguém para socar.");
-        }
-
-        let autor;
-        let alvo = mentions[0];
-
-        try {
-            if (message.fromMe) {
-                autor = await client.getContactById(client.info.wid._serialized);
-            } else {
-                autor = await message.getContact();
-            }
-        } catch (e) {
-            return message.reply("Erro ao identificar quem enviou.");
-        }
-
-        if (!alvo || !alvo.id) {
-            return message.reply("Não consegui identificar o usuário marcado.");
-        }
-
-        const frases = [
-            "🥊 @AUTOR acertou um soco em cheio em @ALVO!",
-            "💥 @AUTOR partiu pra cima e socou @ALVO!",
-            "👊 @AUTOR perdeu a paciência e deu um soco em @ALVO!",
-            "😵 @ALVO levou um socão de @AUTOR!"
-        ];
-
-        const frase = frases[Math.floor(Math.random() * frases.length)];
-
-        const legenda = frase
-            .replace("@AUTOR", `@${autor && autor.id ? autor.id.user : "usuario"}`)
-            .replace("@ALVO", `@${alvo && alvo.id ? alvo.id.user : "alvo"}`);
+        if (!mentions.length)
+            return message.reply("Marque alguém.");
 
         const media = MessageMedia.fromFilePath("./000000.mp4");
 
-        const listaMentions = [];
-        if (autor && autor.id) listaMentions.push(autor);
-        if (alvo && alvo.id) listaMentions.push(alvo);
-
         await chat.sendMessage(media, {
-            caption: legenda,
-            mentions: listaMentions,
+            caption: "🥊 Soco!",
             sendVideoAsGif: true
         });
     }
 
-}); // ✅ FECHAMENTO CORRETO
+});
 
-// retry automático
+// ===============================
 async function start() {
     try {
         await client.initialize();
     } catch (err) {
         console.log("ERRO REAL:", err);
-        // setTimeout(start, 5000);
     }
 }
 
