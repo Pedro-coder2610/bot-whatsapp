@@ -31,9 +31,12 @@ const client = new Client({
 client.on("loading_screen", (percent, message) => {
     console.log("Carregando:", percent, message);
 });
+const qrcode = require("qrcode-terminal");
+
 client.on("qr", (qr) => {
-    console.log("ESCANEIA ESSE QR:", qr);
+    qrcode.generate(qr, { small: true });
 });
+
 client.on("authenticated", async () => {
     console.log("Autenticado com sucesso!");
     try {
