@@ -33,8 +33,14 @@ client.on("loading_screen", (percent, message) => {
 });
 const qrcode = require("qrcode-terminal");
 
-client.on("qr", (qr) => {
-    qrcode.generate(qr, { small: true });
+const QRCode = require("qrcode");
+
+client.on("qr", async (qr) => {
+    console.log("Gerando QR como imagem...");
+
+    await QRCode.toFile("qrcode.png", qr);
+
+    console.log("QR salvo como qrcode.png");
 });
 
 client.on("authenticated", async () => {
