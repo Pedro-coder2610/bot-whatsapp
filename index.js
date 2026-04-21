@@ -12,7 +12,7 @@ const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
 
 const client = new Client({
     authStrategy: new LocalAuth({
-        clientId: "bot-whatsapp"
+        clientId: "bot-whatsapp-2"
     }),
     puppeteer: {
         headless: true,
