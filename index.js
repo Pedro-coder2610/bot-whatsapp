@@ -76,7 +76,7 @@ client.on("ready", () => {
 // ===============================
 // APAGAR MENSAGEM DE MUTADO
 // ===============================
-client.on("message_create", async (msg) => {
+client.on("message", async (msg) => {
 
     if (!msg.from) return;
 
@@ -97,7 +97,9 @@ client.on("message_create", async (msg) => {
 // ===============================
 // COMANDOS
 // ===============================
-client.on("message_create", async (message) => {
+client.on("message", async (message) => {
+
+    if (message.fromMe) return;
 
     const texto = message.body?.trim();
     if (!texto) return;
@@ -140,7 +142,6 @@ verifique todos os dias para comandos novos!
 ╭━━⪩ PRINCIPAL ⪨━━
 ▢ • !menu
 ▢ • !ping
-▢ • !s [EM BREVE]
 ╰━━─「🚀」─━━
 
 ╭━━⪩ BRINCADEIRAS ⪨━━
