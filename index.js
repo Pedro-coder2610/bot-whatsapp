@@ -177,68 +177,68 @@ verifique todos os dias para comandos novos!
     }
 
     // ===============================
-    if (comando === "mute") {
+if (comando === "mute") {
 
-        if (!chat.isGroup)
-            return message.reply("Esse comando só funciona em grupo.");
+    if (!chat.isGroup)
+        return message.reply("Esse comando só funciona em grupo.");
 
-        const mentions = await message.getMentions();
+    const mentions = await message.getMentions();
 
-        if (!mentions.length)
-            return message.reply("Marque alguém para mutar.");
+    if (!mentions.length)
+        return message.reply("Marque alguém para mutar.");
 
-        const lista = getMutados(chat.id._serialized);
+    const lista = getMutados(chat.id._serialized);
 
-        for (const c of mentions) {
-            lista.add(c.id._serialized);
-        }
-
-        await chat.sendMessage(`🔇 Usuário(s) mutado(s).`, { mentions });
+    for (const c of mentions) {
+        lista.add(c.id._serialized);
     }
+
+    await message.reply(`🔇 Usuário(s) mutado(s).`);
+}
 
     // ===============================
-    if (comando === "unmute") {
+   if (comando === "unmute") {
 
-        if (!chat.isGroup)
-            return message.reply("Esse comando só funciona em grupo.");
+    if (!chat.isGroup)
+        return message.reply("Esse comando só funciona em grupo.");
 
-        const mentions = await message.getMentions();
+    const mentions = await message.getMentions();
 
-        if (!mentions.length)
-            return message.reply("Marque alguém para desmutar.");
+    if (!mentions.length)
+        return message.reply("Marque alguém para desmutar.");
 
-        const lista = getMutados(chat.id._serialized);
+    const lista = getMutados(chat.id._serialized);
 
-        for (const c of mentions) {
-            lista.delete(c.id._serialized);
-        }
-
-        await chat.sendMessage(`🔊 Usuário(s) desmutado(s).`, { mentions });
+    for (const c of mentions) {
+        lista.delete(c.id._serialized);
     }
+
+    await message.reply(`🔊 Usuário(s) desmutado(s).`);
+}
 
     // ===============================
     if (comando === "mutelist") {
 
-        if (!chat.isGroup)
-            return message.reply("Esse comando só funciona em grupo.");
+    if (!chat.isGroup)
+        return message.reply("Esse comando só funciona em grupo.");
 
-        const lista = getMutados(chat.id._serialized);
+    const lista = getMutados(chat.id._serialized);
 
-        if (!lista.size) {
-            return message.reply("📋 Nenhum usuário mutado.");
-        }
-
-        let textoLista = "📋 Lista de mutados:\n\n";
-        const mentions = [];
-
-        for (const id of lista) {
-            const contato = await client.getContactById(id);
-            mentions.push(contato);
-            textoLista += `• @${id.split("@")[0]}\n`;
-        }
-
-        await chat.sendMessage(textoLista, { mentions });
+    if (!lista.size) {
+        return message.reply("📋 Nenhum usuário mutado.");
     }
+
+    let textoLista = "📋 Lista de mutados:\n\n";
+    const mentions = [];
+
+    for (const id of lista) {
+        const contato = await client.getContactById(id);
+        mentions.push(contato);
+        textoLista += `• @${id.split("@")[0]}\n`;
+    }
+
+    await chat.sendMessage(textoLista, { mentions });
+}
 
     // ===============================
     if (comando === "abraço" || comando === "abraco") {
