@@ -138,17 +138,19 @@ verifique todos os dias para comandos novos!
 ▢ • !mute
 ▢ • !unmute
 ▢ • !mutelist
-▢ • !autodestruir
 ╰━━─「⭐」─━━
 
 ╭━━⪩ PRINCIPAL ⪨━━
 ▢ • !menu
 ▢ • !ping
+▢ • !s [EM BREVE]
+▢ • !bot [EM BREVE]
 ╰━━─「🚀」─━━
 
 ╭━━⪩ BRINCADEIRAS ⪨━━
 ▢ • !abraço
 ▢ • !socar  
+▢ • !musica [EM BREVE]
 ╰━━─「🎡」─━━
 `;
 
