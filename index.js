@@ -14,18 +14,19 @@ const client = new Client({
     authStrategy: new LocalAuth({
         clientId: "bot-whatsapp-2"
     }),
-    puppeteer: {
-        headless: true,
-        args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-accelerated-2d-canvas",
-            "--no-first-run",
-            "--no-zygote",
-            "--single-process"
-        ]
-    }
+puppeteer: {
+    headless: true,
+    args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-accelerated-2d-canvas",
+        "--no-first-run",
+        "--no-zygote",
+        "--single-process",
+        "--disable-gpu" 
+    ]
+}
 });
 
 client.on("loading_screen", (percent, message) => {
@@ -77,10 +78,7 @@ function getMutados(chatId) {
 client.on("ready", () => {
     console.log("Client is ready!");
 });
-client.on("disconnected", (reason) => {
-    console.log("⚠️ Desconectado:", reason);
-    start();
-});
+
 // ===============================
 client.on("message_create", async (message) => {
 
