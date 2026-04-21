@@ -31,16 +31,14 @@ const client = new Client({
 client.on("loading_screen", (percent, message) => {
     console.log("Carregando:", percent, message);
 });
-const qrcode = require("qrcode-terminal");
-
 const QRCode = require("qrcode");
 
 client.on("qr", async (qr) => {
-    console.log("Gerando QR como imagem...");
+    console.log("LINK DO QR:");
 
-    await QRCode.toFile("qrcode.png", qr);
+    const url = await QRCode.toDataURL(qr);
 
-    console.log("QR salvo como qrcode.png");
+    console.log(url);
 });
 
 client.on("authenticated", async () => {
