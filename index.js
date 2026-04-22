@@ -144,7 +144,7 @@ verifique todos os dias para comandos novos!
 ▢ • !menu
 ▢ • !ping
 ▢ • !f 
-▢ • !bot [EM BREVE]
+▢ • !p
 ╰━━─「🚀」─━━
 
 ╭━━⪩ BRINCADEIRAS ⪨━━
@@ -177,7 +177,37 @@ verifique todos os dias para comandos novos!
 📶 Velocidade de resposta: ${lat}ms
 ⏱️ Uptime: ${h}h ${m}m ${s}s`);
     }
+    //===============================
+    if (comando === "p") {
 
+    let alvo = message;
+
+    // se respondeu alguém
+    if (message.hasQuotedMsg) {
+        alvo = await message.getQuotedMessage();
+    }
+
+    // verifica mídia
+    if (!alvo.hasMedia) {
+        return message.reply("❌ Responda a uma figurinha.");
+    }
+
+    try {
+        const media = await alvo.downloadMedia();
+
+        if (!media.mimetype.includes("image")) {
+            return message.reply("❌ Isso não é figurinha.");
+        }
+
+        const chat = await message.getChat();
+
+        await chat.sendMessage(media); // manda como imagem normal
+
+    } catch (e) {
+        console.log("ERRO IMG:", e);
+        return message.reply("❌ Erro ao converter figurinha.");
+    }
+}
     //================================
   if (comando === "f") {
 
