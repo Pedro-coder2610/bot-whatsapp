@@ -143,7 +143,7 @@ verifique todos os dias para comandos novos!
 ╭━━⪩ PRINCIPAL ⪨━━
 ▢ • !menu
 ▢ • !ping
-▢ • !f [EM BREVE]
+▢ • !f 
 ▢ • !bot [EM BREVE]
 ╰━━─「🚀」─━━
 
@@ -183,7 +183,6 @@ verifique todos os dias para comandos novos!
 
     let alvo = message;
 
-    // se for resposta
     if (message.hasQuotedMsg) {
         alvo = await message.getQuotedMessage();
     }
@@ -195,15 +194,13 @@ verifique todos os dias para comandos novos!
     try {
         const media = await alvo.downloadMedia();
 
-        if (!media || !media.mimetype) {
-            return message.reply("❌ Erro ao baixar mídia.");
-        }
-
         if (!media.mimetype.startsWith("image")) {
             return message.reply("❌ Isso não é uma imagem.");
         }
 
-        await client.sendMessage(message.from, media, {
+        const chat = await message.getChat();
+
+        await chat.sendMessage(media, {
             sendMediaAsSticker: true
         });
 
