@@ -179,30 +179,38 @@ verifique todos os dias para comandos novos!
     }
 
     //================================
-    if (comando === "f") {
+  if (comando === "f") {
 
-    let msg = message;
+    let alvo = message;
 
-    // se for resposta a outra mensagem
+    // se for resposta
     if (message.hasQuotedMsg) {
-        msg = await message.getQuotedMessage();
+        alvo = await message.getQuotedMessage();
     }
 
-    // verifica se tem mídia
-    if (!msg.hasMedia) {
+    if (!alvo.hasMedia) {
         return message.reply("❌ Envie ou responda a uma imagem.");
     }
 
-    const media = await msg.downloadMedia();
+    try {
+        const media = await alvo.downloadMedia();
 
-    // verifica se é imagem
-    if (!media.mimetype.startsWith("image")) {
-        return message.reply("❌ Isso não é uma imagem.");
+        if (!media || !media.mimetype) {
+            return message.reply("❌ Erro ao baixar mídia.");
+        }
+
+        if (!media.mimetype.startsWith("image")) {
+            return message.reply("❌ Isso não é uma imagem.");
+        }
+
+        await client.sendMessage(message.from, media, {
+            sendMediaAsSticker: true
+        });
+
+    } catch (e) {
+        console.log("ERRO FIGURINHA:", e);
+        return message.reply("❌ Deu erro ao criar figurinha.");
     }
-
-    await message.reply(media, undefined, {
-        sendMediaAsSticker: true
-    });
 }
     // ===============================
 if (comando === "mute") {
