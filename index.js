@@ -135,15 +135,15 @@ verifique todos os dias para comandos novos!
 ╰━━─「🪐」─━━
 
 ╭━━⪩ ADM ⪨━━
-▢ • !mute
-▢ • !unmute
-▢ • !mutelist
+▢ • !mute [EM MANUTENÇÃO]
+▢ • !unmute [EM MANUTENÇÃO]
+▢ • !mutelist [EM MANUTENÇÃO]
 ╰━━─「⭐」─━━
 
 ╭━━⪩ PRINCIPAL ⪨━━
 ▢ • !menu
 ▢ • !ping
-▢ • !s [EM BREVE]
+▢ • !f [EM BREVE]
 ▢ • !bot [EM BREVE]
 ╰━━─「🚀」─━━
 
@@ -178,6 +178,32 @@ verifique todos os dias para comandos novos!
 ⏱️ Uptime: ${h}h ${m}m ${s}s`);
     }
 
+    //================================
+    if (comando === "f") {
+
+    let msg = message;
+
+    // se for resposta a outra mensagem
+    if (message.hasQuotedMsg) {
+        msg = await message.getQuotedMessage();
+    }
+
+    // verifica se tem mídia
+    if (!msg.hasMedia) {
+        return message.reply("❌ Envie ou responda a uma imagem.");
+    }
+
+    const media = await msg.downloadMedia();
+
+    // verifica se é imagem
+    if (!media.mimetype.startsWith("image")) {
+        return message.reply("❌ Isso não é uma imagem.");
+    }
+
+    await message.reply(media, undefined, {
+        sendMediaAsSticker: true
+    });
+}
     // ===============================
 if (comando === "mute") {
 
