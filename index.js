@@ -14,31 +14,30 @@ const client = new Client({
     authStrategy: new LocalAuth({
         clientId: "bot-whatsapp-2"
     }),
-puppeteer: {
-    headless: true,
-    args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-accelerated-2d-canvas",
-        "--no-first-run",
-        "--no-zygote",
-        "--single-process",
-        "--disable-gpu" 
-    ]
-}
+    puppeteer: {
+        headless: true,
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-accelerated-2d-canvas",
+            "--no-first-run",
+            "--no-zygote",
+            "--single-process",
+            "--disable-gpu"
+        ]
+    }
 });
 
 client.on("loading_screen", (percent, message) => {
     console.log("Carregando:", percent, message);
 });
+
 const QRCode = require("qrcode");
 
 client.on("qr", async (qr) => {
     console.log("LINK DO QR:");
-
     const url = await QRCode.toDataURL(qr);
-
     console.log(url);
 });
 
@@ -82,28 +81,31 @@ client.on("ready", () => {
 // ===============================
 client.on("message_create", async (message) => {
 
-    if (!msg.from) return;
+    console.log("MSG:", message.body);
 
-    const chat = await msg.getChat();
-    if (!chat.isGroup) return;
+    if (!message.from) return;
 
-    const lista = mutados.get(chat.id._serialized);
-    if (!lista) return;
+    const chat = await message.getChat();
 
-    if (lista.has(msg.author)) {
-        try {
-            await msg.delete(true);
-        } catch (e) {}
+    // ===============================
+    // SISTEMA DE MUTE (CORRIGIDO)
+    // ===============================
+    if (chat.isGroup) {
+        const lista = mutados.get(chat.id._serialized);
+
+        if (lista) {
+            const autor = message.author || message.from;
+
+            if (lista.has(autor)) {
+                try {
+                    await message.delete(true);
+                    return;
+                } catch (e) {
+                    console.log("Erro ao deletar:", e);
+                }
+            }
+        }
     }
-
-});
-
-// ===============================
-client.on("message_create", async (message) => {
-
-console.log("MSG:", message.body);
- 
-if (!message.from) return;
 
     const texto = message.body?.trim();
     if (!texto) return;
@@ -113,8 +115,6 @@ if (!message.from) return;
         .slice(prefixo.length)
         .split(" ")[0]
         .toLowerCase();
-
-    const chat = await message.getChat();
 
     // ===============================
     if (comando === "menu") {
@@ -177,135 +177,108 @@ verifique todos os dias para comandos novos!
 📶 Velocidade de resposta: ${lat}ms
 ⏱️ Uptime: ${h}h ${m}m ${s}s`);
     }
+
     //===============================
     if (comando === "p") {
 
-    let alvo = message;
+        let alvo = message;
 
-    // se respondeu alguém
-    if (message.hasQuotedMsg) {
-        alvo = await message.getQuotedMessage();
-    }
-
-    // verifica mídia
-    if (!alvo.hasMedia) {
-        return message.reply("❌ Responda a uma figurinha.");
-    }
-
-    try {
-        const media = await alvo.downloadMedia();
-
-        if (!media.mimetype.includes("image")) {
-            return message.reply("❌ Isso não é figurinha.");
+        if (message.hasQuotedMsg) {
+            alvo = await message.getQuotedMessage();
         }
 
-        const chat = await message.getChat();
-
-        await chat.sendMessage(media); // manda como imagem normal
-
-    } catch (e) {
-        console.log("ERRO IMG:", e);
-        return message.reply("❌ Erro ao converter figurinha.");
-    }
-}
-    //================================
-  if (comando === "f") {
-
-    let alvo = message;
-
-    if (message.hasQuotedMsg) {
-        alvo = await message.getQuotedMessage();
-    }
-
-    if (!alvo.hasMedia) {
-        return message.reply("❌ Envie ou responda a uma imagem.");
-    }
-
-    try {
-        const media = await alvo.downloadMedia();
-
-        if (!media.mimetype.startsWith("image")) {
-            return message.reply("❌ Isso não é uma imagem.");
+        if (!alvo.hasMedia) {
+            return message.reply("❌ Responda a uma figurinha.");
         }
 
-        const chat = await message.getChat();
-
-        await chat.sendMessage(media, {
-            sendMediaAsSticker: true
-        });
-
-    } catch (e) {
-        console.log("ERRO FIGURINHA:", e);
-        return message.reply("❌ Deu erro ao criar figurinha.");
-    }
-}
-    // ===============================
-client.on("message_create", async (message) => {
-
-    if (message.fromMe) return;
-
-    const chat = await message.getChat();
-    if (!chat.isGroup) return;
-
-    const lista = mutados.get(chat.id._serialized);
-    if (!lista) return;
-
-    // pega o autor certo
-    const autor = message.author || message.from;
-
-    if (lista.has(autor)) {
         try {
-            await message.delete(true);
+            const media = await alvo.downloadMedia();
+
+            if (!media.mimetype.includes("image")) {
+                return message.reply("❌ Isso não é figurinha.");
+            }
+
+            await chat.sendMessage(media);
+
         } catch (e) {
-            console.log("Erro ao deletar:", e);
+            console.log("ERRO IMG:", e);
+            return message.reply("❌ Erro ao converter figurinha.");
         }
     }
 
-});
+    //================================
+    if (comando === "f") {
 
-    // ===============================
-   if (comando === "unmute") {
+        let alvo = message;
 
-    if (!chat.isGroup)
-        return message.reply("Esse comando só funciona em grupo.");
+        if (message.hasQuotedMsg) {
+            alvo = await message.getQuotedMessage();
+        }
 
-    const mentions = await message.getMentions();
+        if (!alvo.hasMedia) {
+            return message.reply("❌ Envie ou responda a uma imagem.");
+        }
 
-    if (!mentions.length)
-        return message.reply("Marque alguém para desmutar.");
+        try {
+            const media = await alvo.downloadMedia();
 
-    const lista = getMutados(chat.id._serialized);
+            if (!media.mimetype.startsWith("image")) {
+                return message.reply("❌ Isso não é uma imagem.");
+            }
 
-    for (const c of mentions) {
-        lista.delete(c.id._serialized);
+            await chat.sendMessage(media, {
+                sendMediaAsSticker: true
+            });
+
+        } catch (e) {
+            console.log("ERRO FIGURINHA:", e);
+            return message.reply("❌ Deu erro ao criar figurinha.");
+        }
     }
 
-    await message.reply(`🔊 Usuário(s) desmutado(s).`);
-}
+    // ===============================
+    if (comando === "unmute") {
+
+        if (!chat.isGroup)
+            return message.reply("Esse comando só funciona em grupo.");
+
+        const mentions = await message.getMentions();
+
+        if (!mentions.length)
+            return message.reply("Marque alguém para desmutar.");
+
+        const lista = getMutados(chat.id._serialized);
+
+        for (const c of mentions) {
+            lista.delete(c.id._serialized);
+        }
+
+        await message.reply(`🔊 Usuário(s) desmutado(s).`);
+    }
 
     // ===============================
     if (comando === "mutelist") {
 
-    if (!chat.isGroup)
-        return message.reply("Esse comando só funciona em grupo.");
+        if (!chat.isGroup)
+            return message.reply("Esse comando só funciona em grupo.");
 
-    const lista = getMutados(chat.id._serialized);
+        const lista = getMutados(chat.id._serialized);
 
-    if (!lista.size) {
-        return message.reply("📋 Nenhum usuário mutado.");
+        if (!lista.size) {
+            return message.reply("📋 Nenhum usuário mutado.");
+        }
+
+        let textoLista = "📋 Lista de mutados:\n\n";
+        const mentions = [];
+
+        for (const id of lista) {
+            const contato = await client.getContactById(id);
+            mentions.push(contato);
+            textoLista += `• @${id.split("@")[0]}\n`;
+        }
+
+        await chat.sendMessage(textoLista, { mentions });
     }
-
-    let textoLista = "📋 Lista de mutados:\n\n";
-    const mentions = [];
-
-    for (const id of lista) {
-        const contato = await client.getContactById(id);
-        mentions.push(contato);
-        textoLista += `• @${id.split("@")[0]}\n`;
-    }
-
-    await chat.sendMessage(textoLista, { mentions });
-}
 
     // ===============================
     if (comando === "abraço" || comando === "abraco") {
@@ -418,7 +391,7 @@ client.on("message_create", async (message) => {
         });
     }
 
-}); // ✅ FECHAMENTO CORRETO
+}); // ✅ FECHAMENTO
 
 async function start() {
     try {
@@ -429,7 +402,9 @@ async function start() {
         setTimeout(start, 5000);
     }
 }
+
 setInterval(() => {
     console.log("🧠 Bot ainda vivo");
 }, 30000);
+
 start();
