@@ -179,92 +179,49 @@ verifique todos os dias para comandos novos!
     }
 
     // ===============================
-    if (comando === "musica") {
+   // ===============================
+if (comando === "musica") {
 
-        console.log("COMANDO MUSICA ATIVADO");
+    console.log("COMANDO MUSICA (YOUTUBE)");
 
-        const nome = message.body.split(" ").slice(1).join(" ");
+    const nome = message.body.split(" ").slice(1).join(" ");
 
-        if (!nome) {
-            return message.reply("❌ Digite o nome da música.\nEx: !musica mc poze");
-        }
-
-        try {
-            const yts = require("yt-search");
-            const ytdl = require("@distube/ytdl-core");
-            const fs = require("fs");
-
-            const busca = await yts(nome);
-
-            if (!busca.videos.length) {
-                return message.reply("❌ Música não encontrada.");
-            }
-
-            const video = busca.videos[0];
-
-            if (video.seconds > 240) {
-                return message.reply("❌ Música muito longa! (máx: 4 minutos)");
-            }
-
-            const url = video.url;
-
-            await message.reply(`🎧 Baixando: *${video.title}*`);
-
-            const path = `/tmp/musica_${Date.now()}.mp3`;
-
-            const stream = ytdl(url, {
-                filter: "audioonly",
-                quality: "lowestaudio",
-                highWaterMark: 1 << 25
-            });
-
-            const writeStream = fs.createWriteStream(path);
-
-            const timeout = setTimeout(() => {
-                console.log("⏱️ Timeout música");
-                stream.destroy();
-            }, 30000);
-
-            stream.pipe(writeStream);
-
-            stream.on("error", (err) => {
-                console.log("ERRO STREAM:", err);
-                clearTimeout(timeout);
-                return message.reply("❌ Erro ao baixar áudio.");
-            });
-
-            writeStream.on("error", (err) => {
-                console.log("ERRO WRITE:", err);
-                clearTimeout(timeout);
-                return message.reply("❌ Erro ao salvar áudio.");
-            });
-
-            writeStream.on("finish", async () => {
-                clearTimeout(timeout);
-
-                try {
-                    if (!fs.existsSync(path)) {
-                        return message.reply("❌ Falha ao baixar música.");
-                    }
-
-                    const media = MessageMedia.fromFilePath(path);
-
-                    await message.reply(media);
-
-                    fs.unlinkSync(path);
-
-                } catch (e) {
-                    console.log("ERRO ENVIO:", e);
-                    return message.reply("❌ Erro ao enviar música.");
-                }
-            });
-
-        } catch (e) {
-            console.log("ERRO MUSICA:", e);
-            await message.reply("❌ Erro ao processar música.");
-        }
+    if (!nome) {
+        return message.reply("❌ Digite o nome da música.\nEx: !musica mc poze");
     }
 
+    try {
+        const yts = require("yt-search");
+
+        const busca = await yts(nome);
+
+        if (!busca.videos.length) {
+            return message.reply("❌ Música não encontrada.");
+        }
+
+        const video = busca.videos[0];
+
+        const titulo = video.title;
+        const duracao = video.timestamp;
+        const canal = video.author.name;
+        const link = video.url;
+
+        const resposta = `
+🎧 *${titulo}*
+
+⏱️ Duração: ${duracao}
+📺 Canal: ${canal}
+
+🔗 ${link}
+`;
+
+        await message.reply(resposta);
+
+    } catch (e) {
+        console.log("ERRO MUSICA:", e);
+        await message.reply("❌ Erro ao buscar música.");
+    }
+}
     // ===============================
     if (comando === "p") {
 
