@@ -240,24 +240,28 @@ verifique todos os dias para comandos novos!
     }
 }
     // ===============================
-if (comando === "mute") {
+client.on("message_create", async (message) => {
 
-    if (!chat.isGroup)
-        return message.reply("Esse comando só funciona em grupo.");
+    if (message.fromMe) return;
 
-    const mentions = await message.getMentions();
+    const chat = await message.getChat();
+    if (!chat.isGroup) return;
 
-    if (!mentions.length)
-        return message.reply("Marque alguém para mutar.");
+    const lista = mutados.get(chat.id._serialized);
+    if (!lista) return;
 
-    const lista = getMutados(chat.id._serialized);
+    // pega o autor certo
+    const autor = message.author || message.from;
 
-    for (const c of mentions) {
-        lista.add(c.id._serialized);
+    if (lista.has(autor)) {
+        try {
+            await message.delete(true);
+        } catch (e) {
+            console.log("Erro ao deletar:", e);
+        }
     }
 
-    await message.reply(`🔇 Usuário(s) mutado(s).`);
-}
+});
 
     // ===============================
    if (comando === "unmute") {
