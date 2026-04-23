@@ -151,7 +151,7 @@ verifique todos os dias para comandos novos!
 ╭━━⪩ BRINCADEIRAS ⪨━━
 ▢ • !abraço
 ▢ • !socar  
-▢ • !musica [EM BREVE]
+▢ • !musica 
 ╰━━─「🎡」─━━
 `;
 
@@ -180,6 +180,27 @@ verifique todos os dias para comandos novos!
     }
 
     //===============================
+    // ===============================
+if (comando === "musica") {
+
+    const nome = message.body.slice(prefixo.length + 7).trim();
+
+    if (!nome) {
+        return message.reply("❌ Digite o nome da música.\nEx: !musica mc poze");
+    }
+
+    try {
+        const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(nome)}`;
+
+        await message.reply(`🎧 Resultado para: *${nome}*\n\n🔎 ${url}`);
+
+    } catch (e) {
+        console.log("ERRO MUSICA:", e);
+        await message.reply("❌ Erro ao buscar música.");
+    }
+}
+    //===============================
+
     if (comando === "p") {
 
         let alvo = message;
