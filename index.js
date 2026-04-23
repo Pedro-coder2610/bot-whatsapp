@@ -192,7 +192,7 @@ if (comando === "musica") {
 
     try {
         const yts = require("yt-search");
-        const ytdl = require("ytdl-core");
+       const ytdl = require("@distube/ytdl-core");
         const fs = require("fs");
 
         const busca = await yts(nome);
