@@ -180,6 +180,7 @@ verifique todos os dias para comandos novos!
     }
 
     //===============================
+// ===============================
 if (comando === "musica") {
 
     console.log("COMANDO MUSICA ATIVADO");
@@ -192,7 +193,7 @@ if (comando === "musica") {
 
     try {
         const yts = require("yt-search");
-       const ytdl = require("@distube/ytdl-core");
+        const ytdl = require("@distube/ytdl-core");
         const fs = require("fs");
 
         const busca = await yts(nome);
@@ -203,37 +204,63 @@ if (comando === "musica") {
 
         const video = busca.videos[0];
 
-        // 🔒 LIMITE DE DURAÇÃO (evita crash)
-        if (video.seconds > 300) {
-            return message.reply("❌ Música muito longa! maximo: 5 minutos (vai ouvir um podcast é?)");
-        } 
+        // 🔒 LIMITE (mais seguro)
+        if (video.seconds > 240) {
+            return message.reply("❌ Música muito longa! (máx: 4 minutos)");
+        }
 
         const url = video.url;
 
         await message.reply(`🎧 Baixando: *${video.title}*`);
 
+        const path = `/tmp/musica_${Date.now()}.mp3`;
+
         const stream = ytdl(url, {
             filter: "audioonly",
-            quality: "lowestaudio"
+            quality: "lowestaudio",
+            highWaterMark: 1 << 25
         });
 
-        const path = "./musica.mp3";
         const writeStream = fs.createWriteStream(path);
+
+        // ⏱️ timeout anti-travamento
+        const timeout = setTimeout(() => {
+            console.log("⏱️ Timeout música");
+            stream.destroy();
+        }, 30000);
 
         stream.pipe(writeStream);
 
-        writeStream.on("finish", async () => {
-
-            const media = MessageMedia.fromFilePath(path);
-
-            await message.reply(media);
-
-            fs.unlinkSync(path); // apaga depois
-        });
-
         stream.on("error", (err) => {
             console.log("ERRO STREAM:", err);
-            message.reply("❌ Erro ao baixar áudio.");
+            clearTimeout(timeout);
+            return message.reply("❌ Erro ao baixar áudio.");
+        });
+
+        writeStream.on("error", (err) => {
+            console.log("ERRO WRITE:", err);
+            clearTimeout(timeout);
+            return message.reply("❌ Erro ao salvar áudio.");
+        });
+
+        writeStream.on("finish", async () => {
+            clearTimeout(timeout);
+
+            try {
+                if (!fs.existsSync(path)) {
+                    return message.reply("❌ Falha ao baixar música.");
+                }
+
+                const media = MessageMedia.fromFilePath(path);
+
+                await message.reply(media);
+
+                fs.unlinkSync(path); // limpa arquivo
+
+            } catch (e) {
+                console.log("ERRO ENVIO:", e);
+                return message.reply("❌ Erro ao enviar música.");
+            }
         });
 
     } catch (e) {
