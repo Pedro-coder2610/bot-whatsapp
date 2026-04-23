@@ -83,8 +83,7 @@ client.on("message_create", async (message) => {
 
     console.log("MSG:", message.body);
 
-if (!message.fromMe && !message.body.startsWith(prefixo)) return;
-
+    if (!message.from) return;
 
     const chat = await message.getChat();
 
@@ -179,97 +178,94 @@ verifique todos os dias para comandos novos!
 ⏱️ Uptime: ${h}h ${m}m ${s}s`);
     }
 
-    //===============================
-// ===============================
-if (comando === "musica") {
+    // ===============================
+    if (comando === "musica") {
 
-    console.log("COMANDO MUSICA ATIVADO");
+        console.log("COMANDO MUSICA ATIVADO");
 
-    const nome = message.body.split(" ").slice(1).join(" ");
+        const nome = message.body.split(" ").slice(1).join(" ");
 
-    if (!nome) {
-        return message.reply("❌ Digite o nome da música.\nEx: !musica mc poze");
-    }
-
-    try {
-        const yts = require("yt-search");
-        const ytdl = require("@distube/ytdl-core");
-        const fs = require("fs");
-
-        const busca = await yts(nome);
-
-        if (!busca.videos.length) {
-            return message.reply("❌ Música não encontrada.");
+        if (!nome) {
+            return message.reply("❌ Digite o nome da música.\nEx: !musica mc poze");
         }
 
-        const video = busca.videos[0];
+        try {
+            const yts = require("yt-search");
+            const ytdl = require("@distube/ytdl-core");
+            const fs = require("fs");
 
-        // 🔒 LIMITE (mais seguro)
-        if (video.seconds > 240) {
-            return message.reply("❌ Música muito longa! (máx: 4 minutos)");
-        }
+            const busca = await yts(nome);
 
-        const url = video.url;
-
-        await message.reply(`🎧 Baixando: *${video.title}*`);
-
-        const path = `/tmp/musica_${Date.now()}.mp3`;
-
-        const stream = ytdl(url, {
-            filter: "audioonly",
-            quality: "lowestaudio",
-            highWaterMark: 1 << 25
-        });
-
-        const writeStream = fs.createWriteStream(path);
-
-        // ⏱️ timeout anti-travamento
-        const timeout = setTimeout(() => {
-            console.log("⏱️ Timeout música");
-            stream.destroy();
-        }, 30000);
-
-        stream.pipe(writeStream);
-
-        stream.on("error", (err) => {
-            console.log("ERRO STREAM:", err);
-            clearTimeout(timeout);
-            return message.reply("❌ Erro ao baixar áudio.");
-        });
-
-        writeStream.on("error", (err) => {
-            console.log("ERRO WRITE:", err);
-            clearTimeout(timeout);
-            return message.reply("❌ Erro ao salvar áudio.");
-        });
-
-        writeStream.on("finish", async () => {
-            clearTimeout(timeout);
-
-            try {
-                if (!fs.existsSync(path)) {
-                    return message.reply("❌ Falha ao baixar música.");
-                }
-
-                const media = MessageMedia.fromFilePath(path);
-
-                await message.reply(media);
-
-                fs.unlinkSync(path); // limpa arquivo
-
-            } catch (e) {
-                console.log("ERRO ENVIO:", e);
-                return message.reply("❌ Erro ao enviar música.");
+            if (!busca.videos.length) {
+                return message.reply("❌ Música não encontrada.");
             }
-        });
 
-    } catch (e) {
-        console.log("ERRO MUSICA:", e);
-        await message.reply("❌ Erro ao processar música.");
+            const video = busca.videos[0];
+
+            if (video.seconds > 240) {
+                return message.reply("❌ Música muito longa! (máx: 4 minutos)");
+            }
+
+            const url = video.url;
+
+            await message.reply(`🎧 Baixando: *${video.title}*`);
+
+            const path = `/tmp/musica_${Date.now()}.mp3`;
+
+            const stream = ytdl(url, {
+                filter: "audioonly",
+                quality: "lowestaudio",
+                highWaterMark: 1 << 25
+            });
+
+            const writeStream = fs.createWriteStream(path);
+
+            const timeout = setTimeout(() => {
+                console.log("⏱️ Timeout música");
+                stream.destroy();
+            }, 30000);
+
+            stream.pipe(writeStream);
+
+            stream.on("error", (err) => {
+                console.log("ERRO STREAM:", err);
+                clearTimeout(timeout);
+                return message.reply("❌ Erro ao baixar áudio.");
+            });
+
+            writeStream.on("error", (err) => {
+                console.log("ERRO WRITE:", err);
+                clearTimeout(timeout);
+                return message.reply("❌ Erro ao salvar áudio.");
+            });
+
+            writeStream.on("finish", async () => {
+                clearTimeout(timeout);
+
+                try {
+                    if (!fs.existsSync(path)) {
+                        return message.reply("❌ Falha ao baixar música.");
+                    }
+
+                    const media = MessageMedia.fromFilePath(path);
+
+                    await message.reply(media);
+
+                    fs.unlinkSync(path);
+
+                } catch (e) {
+                    console.log("ERRO ENVIO:", e);
+                    return message.reply("❌ Erro ao enviar música.");
+                }
+            });
+
+        } catch (e) {
+            console.log("ERRO MUSICA:", e);
+            await message.reply("❌ Erro ao processar música.");
+        }
     }
-}
-    //===============================
 
+    // ===============================
     if (comando === "p") {
 
         let alvo = message;
@@ -297,7 +293,7 @@ if (comando === "musica") {
         }
     }
 
-    //================================
+    // ===============================
     if (comando === "f") {
 
         let alvo = message;
@@ -373,9 +369,7 @@ if (comando === "musica") {
 
     // ===============================
     if (comando === "abraço" || comando === "abraco") {
-
-        if (!chat.isGroup)
-            return message.reply("ta carente?.");
+        if (!chat.isGroup) return message.reply("ta carente?.");
 
         const mentions = await message.getMentions();
 
@@ -386,28 +380,22 @@ if (comando === "musica") {
         let alvo = mentions[0];
 
         try {
-            if (message.fromMe) {
-                autor = await client.getContactById(client.info.wid._serialized);
-            } else {
-                autor = await message.getContact();
-            }
+            autor = message.fromMe
+                ? await client.getContactById(client.info.wid._serialized)
+                : await message.getContact();
         } catch (e) {
             return message.reply("Erro ao identificar quem enviou.");
         }
 
-        if (!alvo || !alvo.id) {
-            return message.reply("Não consegui identificar o usuário marcado.");
-        }
+       const frases = [
+    "🤗 @AUTOR deu um abraço bem apertado em @ALVO!",
+    "🥹 @AUTOR chegou de surpresa e abraçou @ALVO!",
+    "💞 @AUTOR espalhou carinho e abraçou @ALVO!",
+    "🫂 @AUTOR não aguentou e foi abraçar @ALVO!",
+    "✨ Abraço quentinho! @AUTOR → @ALVO"
+];
 
-        const frases = [
-            "🤗 @AUTOR deu um abraço bem apertado em @ALVO!",
-            "🥹 @AUTOR chegou de surpresa e abraçou @ALVO!",
-            "💞 @AUTOR espalhou carinho e abraçou @ALVO!",
-            "🫂 @AUTOR não aguentou e foi abraçar @ALVO!",
-            "✨ Abraço quentinho! @AUTOR → @ALVO"
-        ];
-
-        const frase = frases[Math.floor(Math.random() * frases.length)];
+const frase = frases[Math.floor(Math.random() * frases.length)];
 
         const legenda = frase
             .replace("@AUTOR", `@${autor?.id?.user || "usuario"}`)
@@ -415,74 +403,53 @@ if (comando === "musica") {
 
         const media = MessageMedia.fromFilePath("./201888.mp4");
 
-        const listaMentions = [];
-        if (autor?.id) listaMentions.push(autor);
-        if (alvo?.id) listaMentions.push(alvo);
-
         await chat.sendMessage(media, {
             caption: legenda,
-            mentions: listaMentions,
+            mentions: [autor, alvo],
             sendVideoAsGif: true
         });
     }
 
     // ===============================
     if (comando === "socar") {
-
-        if (!chat.isGroup) {
-            return message.reply("Use esse comando em grupo.");
-        }
+        if (!chat.isGroup) return message.reply("Use esse comando em grupo.");
 
         const mentions = await message.getMentions();
-
-        if (!mentions.length) {
-            return message.reply("Marque alguém para socar.");
-        }
+        if (!mentions.length) return message.reply("Marque alguém para socar.");
 
         let autor;
         let alvo = mentions[0];
 
         try {
-            if (message.fromMe) {
-                autor = await client.getContactById(client.info.wid._serialized);
-            } else {
-                autor = await message.getContact();
-            }
+            autor = message.fromMe
+                ? await client.getContactById(client.info.wid._serialized)
+                : await message.getContact();
         } catch (e) {
             return message.reply("Erro ao identificar quem enviou.");
         }
 
-        if (!alvo || !alvo.id) {
-            return message.reply("Não consegui identificar o usuário marcado.");
-        }
+const frases = [
+    "🥊 @AUTOR acertou um soco em cheio em @ALVO!",
+    "💥 @AUTOR partiu pra cima e socou @ALVO!",
+    "👊 @AUTOR perdeu a paciência e deu um soco em @ALVO!",
+    "😵 @ALVO levou um socão de @AUTOR!"
+];
 
-        const frases = [
-            "🥊 @AUTOR acertou um soco em cheio em @ALVO!",
-            "💥 @AUTOR partiu pra cima e socou @ALVO!",
-            "👊 @AUTOR perdeu a paciência e deu um soco em @ALVO!",
-            "😵 @ALVO levou um socão de @AUTOR!"
-        ];
-
-        const frase = frases[Math.floor(Math.random() * frases.length)];
-
+const frase = frases[Math.floor(Math.random() * frases.length)];
         const legenda = frase
-            .replace("@AUTOR", `@${autor && autor.id ? autor.id.user : "usuario"}`)
-            .replace("@ALVO", `@${alvo && alvo.id ? alvo.id.user : "alvo"}`);
+            .replace("@AUTOR", `@${autor?.id?.user || "usuario"}`)
+            .replace("@ALVO", `@${alvo?.id?.user || "alvo"}`);
 
         const media = MessageMedia.fromFilePath("./000000.mp4");
 
-        const listaMentions = [];
-        if (autor && autor.id) listaMentions.push(autor);
-        if (alvo && alvo.id) listaMentions.push(alvo);
-
         await chat.sendMessage(media, {
             caption: legenda,
-            mentions: listaMentions,
+            mentions: [autor, alvo],
             sendVideoAsGif: true
         });
     }
 
-}); // ✅ FECHAMENTO
+}); 
 
 async function start() {
     try {
