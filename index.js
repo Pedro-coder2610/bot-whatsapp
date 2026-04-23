@@ -83,7 +83,8 @@ client.on("message_create", async (message) => {
 
     console.log("MSG:", message.body);
 
-    if (!message.from) return;
+if (!message.fromMe && !message.body.startsWith(prefixo)) return;
+
 
     const chat = await message.getChat();
 
