@@ -132,7 +132,7 @@ verifique todos os dias para comandos novos!
 ▢ • data: ${dataFormatada}
 ▢ • hora: ${horaFormatada}
 ▢ • prefixo: !
-▢ • versão: 2.0
+▢ • versão: 3.0
 ╰━━─「🪐」─━━
 
 ╭━━⪩ ADM ⪨━━
@@ -181,22 +181,57 @@ verifique todos os dias para comandos novos!
 
     //===============================
     // ===============================
+// ===============================
 if (comando === "musica") {
 
-    const nome = message.body.slice(prefixo.length + 7).trim();
+    console.log("COMANDO MUSICA ATIVADO");
+
+    const nome = message.body.split(" ").slice(1).join(" ");
 
     if (!nome) {
         return message.reply("❌ Digite o nome da música.\nEx: !musica mc poze");
     }
 
     try {
-        const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(nome)}`;
+        const yts = require("yt-search");
+        const ytdl = require("ytdl-core");
 
-        await message.reply(`🎧 Resultado para: *${nome}*\n\n🔎 ${url}`);
+        const busca = await yts(nome);
+
+        if (!busca.videos.length) {
+            return message.reply("❌ Música não encontrada.");
+        }
+
+        const video = busca.videos[0];
+
+        const url = video.url;
+
+        await message.reply(`🎧 Baixando: *${video.title}*`);
+
+        const stream = ytdl(url, {
+            filter: "audioonly",
+            quality: "highestaudio"
+        });
+
+        const chunks = [];
+
+        stream.on("data", chunk => chunks.push(chunk));
+
+        stream.on("end", async () => {
+            const buffer = Buffer.concat(chunks);
+
+            const media = new MessageMedia(
+                "audio/mp3",
+                buffer.toString("base64"),
+                "musica.mp3"
+            );
+
+            await message.reply(media);
+        });
 
     } catch (e) {
         console.log("ERRO MUSICA:", e);
-        await message.reply("❌ Erro ao buscar música.");
+        await message.reply("❌ Erro ao baixar música.");
     }
 }
     //===============================
