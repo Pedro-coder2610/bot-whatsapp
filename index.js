@@ -180,8 +180,6 @@ verifique todos os dias para comandos novos!
     }
 
     //===============================
-    // ===============================
-// ===============================
 if (comando === "musica") {
 
     console.log("COMANDO MUSICA ATIVADO");
@@ -195,6 +193,7 @@ if (comando === "musica") {
     try {
         const yts = require("yt-search");
         const ytdl = require("ytdl-core");
+        const fs = require("fs");
 
         const busca = await yts(nome);
 
@@ -204,34 +203,42 @@ if (comando === "musica") {
 
         const video = busca.videos[0];
 
+        // 🔒 LIMITE DE DURAÇÃO (evita crash)
+        if (video.seconds > 300) {
+            return message.reply("❌ Música muito longa! maximo: 5 minutos (vai ouvir um podcast é?)");
+        } 
+
         const url = video.url;
 
         await message.reply(`🎧 Baixando: *${video.title}*`);
 
         const stream = ytdl(url, {
             filter: "audioonly",
-            quality: "highestaudio"
+            quality: "lowestaudio"
         });
 
-        const chunks = [];
+        const path = "./musica.mp3";
+        const writeStream = fs.createWriteStream(path);
 
-        stream.on("data", chunk => chunks.push(chunk));
+        stream.pipe(writeStream);
 
-        stream.on("end", async () => {
-            const buffer = Buffer.concat(chunks);
+        writeStream.on("finish", async () => {
 
-            const media = new MessageMedia(
-                "audio/mp3",
-                buffer.toString("base64"),
-                "musica.mp3"
-            );
+            const media = MessageMedia.fromFilePath(path);
 
             await message.reply(media);
+
+            fs.unlinkSync(path); // apaga depois
+        });
+
+        stream.on("error", (err) => {
+            console.log("ERRO STREAM:", err);
+            message.reply("❌ Erro ao baixar áudio.");
         });
 
     } catch (e) {
         console.log("ERRO MUSICA:", e);
-        await message.reply("❌ Erro ao baixar música.");
+        await message.reply("❌ Erro ao processar música.");
     }
 }
     //===============================
